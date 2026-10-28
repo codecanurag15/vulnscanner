@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vulnscanner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="grid-glow" aria-hidden="true"></div>
+
+<div class="wrap">
+
+  <header class="head">
+    <div class="head-left">
+      <h1>vulnscanner</h1>
+      <p class="tagline">Scans ports, fingerprints services, matches known CVEs, and writes a report — in one pass.</p>
+    </div>
+  </header>
+
+  <form id="scan-form" class="scan-bar">
+    <input id="target" type="text" placeholder="domain, hostname, or IP — e.g. example.com" autocomplete="off" required>
+    <button type="button" id="toggle-advanced" class="ghost-btn">Ports</button>
+    <button type="submit" id="scan-btn" class="primary-btn">
+      <span class="btn-label">Run scan</span>
+    </button>
+  </form>
+
+  <div id="advanced" class="advanced hidden">
+    <label>Port range <span class="dim">(blank = curated common-port list, ~90 ports)</span>
+      <input id="ports" type="text" placeholder="e.g. 1-1024 or 22,80,443">
+    </label>
+    <label>NVD API key <span class="dim">(optional — raises the CVE lookup rate limit)</span>
+      <input id="apikey" type="text" placeholder="optional">
+    </label>
+  </div>
+
+  <p id="auth-note">Only scan systems you own or have explicit written authorization to test.</p>
+
+  <section id="stepper" class="stepper hidden">
+    <div class="step" data-step="resolve"><span class="step-n">1</span><span class="step-label">Resolve target</span></div>
+    <div class="step" data-step="ports"><span class="step-n">2</span><span class="step-label">Scan ports</span></div>
+    <div class="step" data-step="cve"><span class="step-n">3</span><span class="step-label">Match CVEs</span></div>
+    <div class="step" data-step="report"><span class="step-n">4</span><span class="step-label">Build report</span></div>
+  </section>
+
+  <div id="progress-wrap" class="progress-wrap hidden">
+    <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
+    <span id="progress-text" class="progress-text mono">0 / 0</span>
+  </div>
+
+  <section id="log-panel" class="log-panel hidden">
+    <div class="log-head"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span><span class="log-title mono">scan.log</span></div>
+    <div id="log-body" class="log-body mono"></div>
+  </section>
+
+  <section id="results" class="results hidden">
+
+    <div id="summary" class="summary">
+      <div class="tile"><div class="n" id="n-critical" style="color:#ff5c5c">0</div><div class="label">Critical</div></div>
+      <div class="tile"><div class="n" id="n-high" style="color:#ff9f43">0</div><div class="label">High</div></div>
+      <div class="tile"><div class="n" id="n-moderate" style="color:#ffd93d">0</div><div class="label">Moderate</div></div>
+      <div class="tile"><div class="n" id="n-low" style="color:#4ade80">0</div><div class="label">Low</div></div>
+      <div class="tile"><div class="n" id="n-ports">0</div><div class="label">Open ports</div></div>
+    </div>
+
+    <div class="panel">
+      <h2>Open ports &amp; services</h2>
+      <table class="port-table">
+        <thead><tr><th>Port</th><th>Service</th><th>Product / Version</th><th>Banner</th></tr></thead>
+        <tbody id="port-rows"></tbody>
+      </table>
+      <p id="no-ports" class="empty hidden">No open ports detected.</p>
+    </div>
+
+    <div class="panel">
+      <h2>Vulnerabilities</h2>
+      <div id="findings"></div>
+      <p id="no-findings" class="empty hidden">No known CVEs matched the fingerprinted services.</p>
+    </div>
+
+    <a id="report-link" class="primary-btn report-link hidden" target="_blank">View full report</a>
+  </section>
+
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
